@@ -9,11 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Paths a los JSON
-var dataPath = Path.Combine(builder.Environment.ContentRootPath, "Infrastructure", "Data");
+// JSON Paths
+string transactionsPath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    builder.Configuration["DataPaths:Transactions"]!
+);
 
-var transactionsPath = Path.Combine(dataPath, "transactions.json");
-var ratesPath = Path.Combine(dataPath, "rates.json");
+string ratesPath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    builder.Configuration["DataPaths:Rates"]!
+);
 
 // Repositories
 builder.Services.AddSingleton<ITransactionRepository>(new TransactionRepository(transactionsPath));
