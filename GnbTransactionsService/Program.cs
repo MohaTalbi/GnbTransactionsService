@@ -2,6 +2,7 @@ using GnbTransactionsService.Application.Services;
 using GnbTransactionsService.Infrastructure.Middleware;
 using GnbTransactionsService.Infrastructure.Repositories;
 using GnbTransactionsService.Infrastructure.Repositories.Interfaces;
+using GnbTransactionsService.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,14 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // JSON Paths
-string transactionsPath = Path.Combine(
+string transactionsPath = PathValidator.GetRequiredFilePath(
     builder.Environment.ContentRootPath,
-    builder.Configuration["DataPaths:Transactions"]!
+    builder.Configuration["DataPaths:Transactions"],
+    "transactions.json"
 );
 
-string ratesPath = Path.Combine(
+string ratesPath = PathValidator.GetRequiredFilePath(
     builder.Environment.ContentRootPath,
-    builder.Configuration["DataPaths:Rates"]!
+    builder.Configuration["DataPaths:Rates"],
+    "rates.json"
 );
 
 // Repositories
