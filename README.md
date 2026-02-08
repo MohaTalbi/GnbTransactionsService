@@ -15,7 +15,7 @@ La aplicación se organiza en cuatro capas principales:
 **Endpoints:**
 - `RatesController` : consultas de tasas de cambio.
 - `SkusController` : operaciones relacionadas con SKUs.
-- `TransactionsController` : procesamiento de transacciones financieras.
+- `TransactionsController` : procesamiento de transacciones.
 
 ### 2. Application
 - Contiene la lógica de negocio y coordina los servicios para cumplir los casos de uso.
@@ -23,7 +23,10 @@ La aplicación se organiza en cuatro capas principales:
 
 **Servicios principales:**
 - `RateService` : obtiene y procesa tasas de cambio.
-- `CurrencyConverterService` : realiza conversiones entre monedas.
+- `CurrencyConverterService` : realiza conversiones entre monedas (cacheable).
+La lógica de conversión de divisas modela los tipos de cambio como un grafo ponderado dirigido y utiliza la búsqueda en anchura (BFS) para encontrar una ruta de conversión válida, al tiempo que acumula el tipo de cambio de forma multiplicativa.
+![Diagrama  BFS](BFS_Example.png)
+
 - `TransactionService` : gestiona creación y consulta de transacciones.
 
 ### 3. Infrastructure
@@ -70,6 +73,9 @@ La aplicación se organiza en cuatro capas principales:
 - Inyección de dependencias:
 	- Repositorios registrados por interfaz: `ITransactionRepository`, `IRateRepository`.
 	- `RateService` construye el `CurrencyConverter` a partir de las tasas y se registra en DI para compartir la instancia.
+- Redondeo:
+  - Se aplica redondeo sólo al total final: `Math.Round(total, 2, MidpointRounding.ToEven)` ("Banker's Rounding").
+  - Razonamiento: evitar acumulación de errores por redondear cada línea y mantener coherencia contable en totales.
 
 ## Como ejecutar
 **Local:**
@@ -79,13 +85,30 @@ dotnet run --project GnbTransactionsService
 Acceder a Swagger: https://localhost:7178/swagger & http://localhost:5177/swagger
 
 **Dcoker:**
+Posicionarse en la raíz del proyecto GnbTransactionsService (donde está el `Dockerfile`) y ejecutar los siguientes comandos:
+
 # Construir imagen
-docker build -t gnb-transactions-service .
+`docker build -t gnb-transactions-service .`
 
 # Ejecutar contenedor
-docker run -p 5000:8080 -e ASPNETCORE_URLS=http://+:8080 -e DOTNET_RUNNING_IN_CONTAINER=true -e ASPNETCORE_ENVIRONMENT=Development gnb-transactions-service
+`docker run -p 5000:8080 -e ASPNETCORE_URLS=http://+:8080 -e DOTNET_RUNNING_IN_CONTAINER=true -e ASPNETCORE_ENVIRONMENT=Development gnb-transactions-service`
 
 API disponible en: http://localhost:5000
 Swagger: http://localhost:5000/swagger (Development)
 
 ## Tests
+Proyecto de tests: GnbTransactionService.Tests
+
+Incluye:
+- CurrencyConverterTests : conversión directa, multi-salto, cache y redondeo.
+- TransactionServiceTests : SKU inexistente, exclusión de transacciones no convertibles, importes negativos.
+- DtoMappingTests : mapeo básico modelo DTO.
+
+# Ejecutar tests:
+`dotnet test`
+
+Ejecutar únicamente el proyecto de tests `GnbTransactionService.Tests`:
+
+```
+ dotnet test ./GnbTransactionService.Tests/GnbTransactionService.Tests.csproj
+```
