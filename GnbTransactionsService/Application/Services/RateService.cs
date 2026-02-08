@@ -1,7 +1,5 @@
-﻿using GnbTransactionsService.Application.Dtos;
-using GnbTransactionsService.Domain.Models;
+﻿using GnbTransactionsService.Domain.Models;
 using GnbTransactionsService.Infrastructure.Repositories.Interfaces;
-using System.Transactions;
 
 namespace GnbTransactionsService.Application.Services
 {

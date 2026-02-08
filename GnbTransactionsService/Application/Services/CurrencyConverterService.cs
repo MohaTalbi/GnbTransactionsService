@@ -1,6 +1,5 @@
 ﻿using GnbTransactionsService.Domain.Exceptions;
 using GnbTransactionsService.Domain.Models;
-using System.Collections.Generic;
 
 namespace GnbTransactionsService.Application.Services
 {

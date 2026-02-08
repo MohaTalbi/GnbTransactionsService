@@ -1,7 +1,6 @@
 ﻿using GnbTransactionsService.Application.Services;
 using GnbTransactionsService.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using GnbTransactionsService.Domain.Models;
 
 namespace GnbTransactionsService.Controllers

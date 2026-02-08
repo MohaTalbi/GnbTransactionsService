@@ -25,7 +25,8 @@ La aplicación se organiza en cuatro capas principales:
 - `RateService` : obtiene y procesa tasas de cambio.
 - `CurrencyConverterService` : realiza conversiones entre monedas (cacheable).
 La lógica de conversión de divisas modela los tipos de cambio como un grafo ponderado dirigido y utiliza la búsqueda en anchura (BFS) para encontrar una ruta de conversión válida, al tiempo que acumula el tipo de cambio de forma multiplicativa.
-![Diagrama  BFS](BFS_Example.png)
+
+- ![Diagrama  BFS](BFS_Example.png)
 
 - `TransactionService` : gestiona creación y consulta de transacciones.
 

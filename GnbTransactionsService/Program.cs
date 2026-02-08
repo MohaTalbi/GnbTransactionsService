@@ -29,13 +29,6 @@ builder.Services.AddSingleton(sp =>
 });
 builder.Services.AddSingleton<TransactionService>();
 
-//Alternative,- desirable, + coupling
-//RateRepository rateRepository = new RateRepository(ratesPath);
-//TransactionRepository transactionRepository = new TransactionRepository(transactionsPath);
-//RateService rateService = new RateService(rateRepository);
-//CurrencyConverterService currencyConverter = rateService.BuildCurrencyConverter();
-//TransactionService transactionService = new TransactionService(transactionRepository, currencyConverter, null);
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -47,9 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.MapControllers();

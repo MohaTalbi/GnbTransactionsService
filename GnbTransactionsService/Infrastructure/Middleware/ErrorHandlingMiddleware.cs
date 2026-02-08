@@ -9,6 +9,11 @@ namespace GnbTransactionsService.Infrastructure.Middleware
         private readonly RequestDelegate next;
         private readonly ILogger<ErrorHandlingMiddleware> logger;
 
+        /// <summary>
+        /// Pipeline middleware to ensure that unhandled exceptions are properly logged and handled.
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="logger"></param>
         public ErrorHandlingMiddleware(
             RequestDelegate next,
             ILogger<ErrorHandlingMiddleware> logger)

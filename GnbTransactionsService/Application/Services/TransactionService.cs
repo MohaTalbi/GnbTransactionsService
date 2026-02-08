@@ -1,7 +1,6 @@
 ﻿using GnbTransactionsService.Application.Dtos;
 using GnbTransactionsService.Domain.Models;
 using GnbTransactionsService.Infrastructure.Repositories.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace GnbTransactionsService.Application.Services
 {

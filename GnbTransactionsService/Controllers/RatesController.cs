@@ -2,7 +2,6 @@
 using GnbTransactionsService.Application.Services;
 using GnbTransactionsService.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace GnbTransactionsService.Controllers
 {
