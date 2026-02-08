@@ -1,57 +1,91 @@
 # GnbTransactionsService
 
-Arquitectura en Capas de GnbTransactionsService
+GnbTransactionsService es una API diseñada siguiendo **arquitectura en capas**, lo que permite separar responsabilidades y facilita el mantenimiento y la escalabilidad.
 
-La aplicación GnbTransactionsService está diseñada siguiendo una arquitectura en capas, lo que permite separar responsabilidades y facilitar el mantenimiento y la escalabilidad. La estructura se organiza de la siguiente manera:
+--------------
 
-1. Controllers (API)
+## Arquitectura en Capas
 
-Los Controllers son el punto de entrada de la aplicación y exponen los endpoints de la API. Se encargan de recibir las solicitudes del cliente, mapear DTOs a modelos de dominio y delegar la lógica de negocio a los servicios correspondientes.
+La aplicación se organiza en cuatro capas principales:
 
-RatesController → Maneja consultas de tasas de cambio.
+### 1. Controllers (API)
+- Punto de entrada de la aplicación.
+- Reciben solicitudes del cliente, mapean DTOs a modelos de dominio y delegan la lógica a los servicios.
 
-SkusController → Gestiona operaciones relacionadas con SKUs.
+**Endpoints:**
+- `RatesController` : consultas de tasas de cambio.
+- `SkusController` : operaciones relacionadas con SKUs.
+- `TransactionsController` : procesamiento de transacciones financieras.
 
-TransactionsController → Procesa transacciones financieras.
+### 2. Application
+- Contiene la lógica de negocio y coordina los servicios para cumplir los casos de uso.
+- Interactúa con la capa de infraestructura para acceder a datos.
 
-2. Application
+**Servicios principales:**
+- `RateService` : obtiene y procesa tasas de cambio.
+- `CurrencyConverterService` : realiza conversiones entre monedas.
+- `TransactionService` : gestiona creación y consulta de transacciones.
 
-La capa de Application contiene la lógica de negocio y coordina los servicios necesarios para cumplir con los casos de uso:
+### 3. Infrastructure
+- Gestiona persistencia de datos y middleware.
+- Implementa repositorios y aplica **inyección de dependencias (DI)**.
 
-RateService → Se encarga de obtener y procesar las tasas de cambio.
+**Componentes:**
+- `RateRepository` : implementa `IRateRepository`.
+- `TransactionRepository` : implementa `ITransactionRepository`.
+- `ErrorHandlingMiddleware` : manejo global de errores.
 
-CurrencyConverterService → Realiza conversiones entre diferentes monedas.
+### 4. Domain
+- Contiene los modelos de negocio y excepciones específicas.
+- Independiente de frameworks o detalles de infraestructura.
 
-TransactionService → Gestiona la creación y consulta de transacciones.
+**Elementos clave:**
+- **Modelos:** `Transaction`, `Rate`.
+- **Excepciones:** `CurrencyConversionException`, `DataConsistencyException`.
 
-Esta capa también interactúa con los repositorios de la capa de infraestructura para acceder a los datos.
+**Beneficios de esta arquitectura:**
+- Separación clara de responsabilidades  
+- Alta mantenibilidad  
+- Escalabilidad para nuevas funcionalidades  
 
-3. Infrastructure
+![Diagrama de la arquitectura](propuesta_arquitectura.png)
 
-La capa de Infrastructure gestiona la persistencia de datos y middleware. Aquí se implementan los repositorios que se comunican con los archivos de datos (rates.json y transactions.json) y se aplica la inyección de dependencias (DI) para desacoplar la implementación de los repositorios de sus interfaces:
+---
 
-RateRepository → Implementa IRateRepository.
+## Descripción de la API
 
-TransactionRepository → Implementa ITransactionRepository.
+**Tecnología:**
+- .NET 8
+- Uso de `decimal` para importes y tasas (no `double`)
 
-ErrorHandlingMiddleware → Maneja errores globalmente en la aplicación.
+**Reglas de negocio:**
+- Redondeo solo al total final usando:  `Math.Round(total, 2, MidpointRounding.ToEven)`
+- Los importes negativos se incluyen en el cálculo del total (restan al total).
 
-4. Domain
+**Casos especiales:**
+- SKU sin transacciones: `GET /api/skus/{sku}` devuelve 404 con un mensaje explicativo.
+- Transacción sin camino a EUR: se excluye del total y se registra una advertencia. Si todas se excluyen, el resultado es tratado como SKU no existente (404).
+- Datos inconsistentes: al cargar JSON se validan campos básicos; errores de consistencia lanzan `DataConsistencyException` y se traducen a 400 Bad Request por el middleware.
+- Logging y manejo de errores centralizados en `ErrorHandlingMiddleware` (excepciones conocidas se traducen a códigos HTTP adecuados, sin volcar stacktrace al cliente).
+- Inyección de dependencias:
+	- Repositorios registrados por interfaz: `ITransactionRepository`, `IRateRepository`.
+	- `RateService` construye el `CurrencyConverter` a partir de las tasas y se registra en DI para compartir la instancia.
 
-La capa de Domain contiene los modelos de negocio y las excepciones específicas de la aplicación:
+## Como ejecutar
+**Local:**
+dotnet restore
+dotnet run --project GnbTransactionsService
 
-Modelos: Transaction y Rate.
+Acceder a Swagger: https://localhost:7178/swagger & http://localhost:5177/swagger
 
-Excepciones: CurrencyConversionException y DataConsistencyException.
+**Dcoker:**
+# Construir imagen
+docker build -t gnb-transactions-service .
 
-Esta capa define las reglas del negocio y es independiente de detalles de infraestructura o frameworks.
+# Ejecutar contenedor
+docker run -p 5000:8080 -e ASPNETCORE_URLS=http://+:8080 -e DOTNET_RUNNING_IN_CONTAINER=true -e ASPNETCORE_ENVIRONMENT=Development gnb-transactions-service
 
-Esta estructura asegura:
+API disponible en: http://localhost:5000
+Swagger: http://localhost:5000/swagger (Development)
 
-Separación de responsabilidades: Cada capa tiene un propósito claro.
-
-Mantenibilidad: Cambios en una capa afectan mínimamente a las demás.
-
-Escalabilidad: Se pueden agregar nuevas funcionalidades sin afectar la arquitectura existente.
-
-![alt text](propuesta_arquitectura.png)
+## Tests
